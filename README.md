@@ -1,0 +1,2 @@
+# MyJournal
+My Trading Journal
