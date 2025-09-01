@@ -14,7 +14,7 @@
     }
     html,body{height:100%}
     body{background:var(--bg);color:var(--fg);font-family:'Vazirmatn',sans-serif;margin:0;display:flex;flex-direction:column;overflow-x:hidden}
-    .app{max-width:1200px;margin:0 auto;padding:12px 12px 120px;flex:1}
+    .app{max-width:1200px;margin:0 auto;padding:12px 12px 160px;flex:1}
 
     /* Top bar */
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(10,10,10,.95), rgba(10,10,10,.7) 60%, transparent);backdrop-filter:blur(8px);padding:8px 12px}
@@ -31,7 +31,7 @@
     .tab:hover,.tab.active{background:linear-gradient(45deg,var(--brand1),var(--brand2));color:#fff;box-shadow:0 0 14px rgba(33,150,243,.65)}
     .tab-icon{font-size:1.2rem;margin-left:4px}
 
-    .content{margin-top:12px}
+    .content{margin-top:12px;padding-bottom:80px}
     .panel{display:none;background:var(--glass);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);animation:fade .35s ease}
     .panel.active{display:block}
     @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -80,15 +80,15 @@
     .hint{font-size:.9rem;opacity:.8;margin-top:6px}
 
     /* Footer */
-    footer{position:fixed;bottom:80px;left:0;right:0;text-align:center;font-size:.8rem;opacity:.7;padding:12px 0;background:linear-gradient(180deg, transparent, rgba(10,10,10,.8));z-index:30}
+    footer{position:fixed;bottom:16px;left:0;right:0;text-align:center;font-size:.8rem;opacity:.7;padding:12px 0;background:linear-gradient(180deg, transparent, rgba(10,10,10,.8));z-index:30}
     footer a{color:var(--brand1);text-decoration:none;transition:color .2s}
     footer a:hover{color:var(--brand2)}
 
     /* Mobile tweaks */
     @media (max-width:768px){
-      .app{padding:8px 8px 140px}
-      .tabs{position:fixed;bottom:8px;left:8px;right:8px;z-index:40;border-radius:16px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;justify-content:flex-start}
-      .content{padding-bottom:140px}
+      .app{padding:8px 8px 180px}
+      .tabs{position:fixed;bottom:64px;left:8px;right:8px;z-index:40;border-radius:16px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;justify-content:flex-start}
+      .content{padding-bottom:100px}
       .tab{min-width:80px;padding:10px;font-size:.9rem}
       .tab-icon{font-size:1.1rem}
       .table-wrap{display:none}
@@ -96,7 +96,7 @@
       .chart-block{height:260px}
       .grid{grid-template-columns:1fr}
       .actions button{min-width:60px;padding:8px;font-size:.85rem}
-      footer{bottom:64px;padding:8px 0}
+      footer{bottom:16px;padding:8px 0}
       .new-trade-btn{width:36px;height:36px;font-size:18px}
       button.primary,button.neutral{padding:10px}
       button.sl,button.tp{padding:8px}
@@ -366,20 +366,43 @@
       if(charts.capital){ charts.capital.destroy(); charts.pnl.destroy(); charts.pie.destroy(); }
 
       charts.capital = new Chart($('#capitalChart').getContext('2d'),{
-        type:'line', data:{ labels, datasets:[{ label:'تغییر سرمایه', data: capitalHistory.map(h=>h.capital), borderColor:'#21cbf3', backgroundColor:'rgba(33,150,243,.2)', tension:.35, fill:true }]},
-        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#e0e0e0'}}}, scales:{x:{ticks:{color:'#e0e0e0'}}, y:{ticks:{color:'#e0e0e0'}}} }
+        type:'line', 
+        data:{ labels, datasets:[{ label:'تغییر سرمایه', data: capitalHistory.map(h=>h.capital), borderColor:'#21cbf3', backgroundColor:'rgba(33,150,243,.2)', tension:.35, fill:true }]},
+        options:{ 
+          responsive:true, 
+          maintainAspectRatio:false, 
+          plugins:{legend:{labels:{color:'#e0e0e0'}}}, 
+          scales:{x:{ticks:{color:'#e0e0e0'}}, y:{ticks:{color:'#e0e0e0'}}},
+          interaction:{mode:'nearest', intersect:false}, 
+          plugins:{zoom:{zoom:{wheel:{enabled:false}, pinch:{enabled:false}}}} 
+        }
       });
 
       const closed=trades.filter(t=>t.status==='closed');
       charts.pnl = new Chart($('#pnlChart').getContext('2d'),{
-        type:'bar', data:{ labels: closed.map(t=>`#${t.id}`), datasets:[{ label:'PNL هر معامله', data: closed.map(t=>t.pnl), backgroundColor: closed.map(t=> t.pnl>0?'#4caf50':'#ff5252') }]},
-        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#e0e0e0'}}}, scales:{x:{ticks:{color:'#e0e0e0'}}, y:{ticks:{color:'#e0e0e0'}}} }
+        type:'bar', 
+        data:{ labels: closed.map(t=>`#${t.id}`), datasets:[{ label:'PNL هر معامله', data: closed.map(t=>t.pnl), backgroundColor: closed.map(t=> t.pnl>0?'#4caf50':'#ff5252') }]},
+        options:{ 
+          responsive:true, 
+          maintainAspectRatio:false, 
+          plugins:{legend:{labels:{color:'#e0e0e0'}}}, 
+          scales:{x:{ticks:{color:'#e0e0e0'}}, y:{ticks:{color:'#e0e0e0'}}},
+          interaction:{mode:'nearest', intersect:false}, 
+          plugins:{zoom:{zoom:{wheel:{enabled:false}, pinch:{enabled:false}}}} 
+        }
       });
 
       let w=0,l=0; closed.forEach(t=>{ if(t.pnl>0) w++; else if(t.pnl<0) l++; });
       charts.pie = new Chart($('#winLossPie').getContext('2d'),{
-        type:'pie', data:{ labels:['موفق','ناموفق'], datasets:[{ data:[w,l], backgroundColor:['#4caf50','#ff5252'] }]},
-        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#e0e0e0'}}} }
+        type:'pie', 
+        data:{ labels:['موفق','ناموفق'], datasets:[{ data:[w,l], backgroundColor:['#4caf50','#ff5252'] }]},
+        options:{ 
+          responsive:true, 
+          maintainAspectRatio:false, 
+          plugins:{legend:{labels:{color:'#e0e0e0'}}},
+          interaction:{mode:'nearest', intersect:false}, 
+          plugins:{zoom:{zoom:{wheel:{enabled:false}, pinch:{enabled:false}}}} 
+        }
       });
 
       attachFullscreenTools();
