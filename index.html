@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>جورنال من</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --bg:#0a0a0a;--fg:#e0e0e0;--glass:rgba(255,255,255,.06);--line:rgba(0,255,255,.3);
+      --brand1:#2196f3;--brand2:#21cbf3;--danger:#ff5252;--ok:#4caf50;--neutral:#6b7280;
+      --radius:12px;--shadow:0 8px 30px rgba(0,0,0,.35);
+      --tap:48px; /* حداقل سایز لمس */
+    }
+    html,body{height:100%}
+    body{background:var(--bg);color:var(--fg);font-family:'Vazirmatn',sans-serif;margin:0;display:flex;flex-direction:column;overflow-x:hidden}
+    .app{max-width:1200px;margin:0 auto;padding:12px 12px 120px;flex:1}
+
+    /* Top bar */
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:8px;position:sticky;top:0;z-index:50;background:linear-gradient(180deg, rgba(10,10,10,.95), rgba(10,10,10,.7) 60%, transparent);backdrop-filter:blur(8px);padding:8px 12px}
+    .title{font-weight:700;letter-spacing:.3px;font-size:1.2rem}
+    .new-trade-btn{width:40px;height:40px;border-radius:999px;display:flex;justify-content:center;align-items:center;background:linear-gradient(45deg,var(--brand1),var(--brand2));box-shadow:0 6px 20px rgba(33,150,243,.4);border:none;color:#fff;font-size:20px;cursor:pointer;transition:transform .2s, box-shadow .2s;line-height:1}
+    .new-trade-btn:hover{transform:scale(1.05);box-shadow:0 8px 25px rgba(33,150,243,.5)}
+    .new-trade-btn:active{transform:scale(.95);box-shadow:0 4px 15px rgba(33,150,243,.3)}
+
+    /* Tabs as top rail (desktop) / bottom bar (mobile) */
+    .tabs{display:flex;gap:6px;background:var(--glass);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 0 16px rgba(0,255,255,.35);padding:6px;overflow:auto;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{flex:0 0 auto;min-width:100px;padding:10px 14px;text-align:center;cursor:pointer;border-radius:10px;font-weight:700;user-select:none;transition:transform .18s, box-shadow .18s, background .3s, color .3s}
+    .tab:active{transform:scale(.98)}
+    .tab:hover,.tab.active{background:linear-gradient(45deg,var(--brand1),var(--brand2));color:#fff;box-shadow:0 0 14px rgba(33,150,243,.65)}
+    .tab-icon{font-size:1.2rem;margin-left:4px}
+
+    .content{margin-top:12px}
+    .panel{display:none;background:var(--glass);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);animation:fade .35s ease}
+    .panel.active{display:block}
+    @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+    /* Inputs */
+    input,select{background:rgba(255,255,255,.08);color:var(--fg);border:1px solid var(--line);padding:12px;border-radius:10px;margin:8px 0;width:100%;transition:box-shadow .2s, border-color .2s, background .2s;box-sizing:border-box}
+    input:focus,select:focus{outline:none;border-color:var(--brand1);box-shadow:0 0 0 3px rgba(33,150,243,.25)}
+
+    /* Buttons */
+    button.primary{background:linear-gradient(45deg,var(--brand1),var(--brand2));border:none;cursor:pointer;font-weight:700;padding:12px;border-radius:10px;transition:background .3s, box-shadow .3s, transform .2s}
+    button.primary:hover{background:linear-gradient(45deg,var(--brand2),var(--brand1));box-shadow:0 0 12px rgba(33,150,243,.5);transform:translateY(-2px)}
+    button.primary:active{filter:saturate(.9) brightness(.95);transform:translateY(0)}
+    button.sl{background:linear-gradient(45deg, var(--danger), #d32f2f);border:none;cursor:pointer;font-weight:700;padding:10px;border-radius:10px;transition:background .3s, box-shadow .3s, transform .2s}
+    button.sl:hover{box-shadow:0 0 12px rgba(255,82,82,.5);transform:translateY(-2px)}
+    button.sl:active{filter:saturate(.9) brightness(.95);transform:translateY(0)}
+    button.tp{background:linear-gradient(45deg, var(--ok), #388e3c);border:none;cursor:pointer;font-weight:700;padding:10px;border-radius:10px;transition:background .3s, box-shadow .3s, transform .2s}
+    button.tp:hover{box-shadow:0 0 12px rgba(76,175,80,.5);transform:translateY(-2px)}
+    button.tp:active{filter:saturate(.9) brightness(.95);transform:translateY(0)}
+    button.neutral{background:linear-gradient(45deg, var(--neutral), #4b5563);border:none;cursor:pointer;font-weight:700;padding:12px;border-radius:10px;transition:background .3s, box-shadow .3s, transform .2s}
+    button.neutral:hover{box-shadow:0 0 12px rgba(107,114,128,.5);transform:translateY(-2px)}
+    button.neutral:active{filter:saturate(.9) brightness(.95);transform:translateY(0)}
+
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+
+    .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:16px}
+    .metric{background:rgba(255,255,255,.08);backdrop-filter:blur(10px);padding:14px;border-radius:12px;text-align:center;border:1px solid var(--line);transition:transform .2s, box-shadow .2s}
+    .metric:active{transform:translateY(2px);box-shadow:0 0 8px rgba(0,255,255,.3)}
+
+    .table-wrap{overflow:auto;margin:8px 0}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;text-align:center;border:1px solid rgba(255,255,255,.12)}
+    th{background:rgba(33,150,243,.18)}
+
+    .cards .card{background:rgba(255,255,255,.06);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px;box-shadow:var(--shadow)}
+    .actions{display:flex;gap:6px;flex-wrap:wrap}
+    .actions button{min-width:72px;padding:10px;font-size:14px}
+
+    .green{color:var(--ok)}.red{color:var(--danger)}
+
+    .chart-block{position:relative;height:320px;margin:14px 0;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+    .chart-toolbar{position:absolute;inset:auto 8px 8px auto;display:flex;gap:6px}
+    .tool{width:40px;height:40px;border-radius:999px;display:grid;place-items:center;border:none;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);cursor:pointer;font-size:1rem}
+    .tool:hover{background:rgba(255,255,255,.2)}
+
+    /* Hints */
+    .hint{font-size:.9rem;opacity:.8;margin-top:6px}
+
+    /* Footer */
+    footer{position:fixed;bottom:80px;left:0;right:0;text-align:center;font-size:.8rem;opacity:.7;padding:12px 0;background:linear-gradient(180deg, transparent, rgba(10,10,10,.8));z-index:30}
+    footer a{color:var(--brand1);text-decoration:none;transition:color .2s}
+    footer a:hover{color:var(--brand2)}
+
+    /* Mobile tweaks */
+    @media (max-width:768px){
+      .app{padding:8px 8px 140px}
+      .tabs{position:fixed;bottom:8px;left:8px;right:8px;z-index:40;border-radius:16px;padding:6px;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;justify-content:flex-start}
+      .content{padding-bottom:140px}
+      .tab{min-width:80px;padding:10px;font-size:.9rem}
+      .tab-icon{font-size:1.1rem}
+      .table-wrap{display:none}
+      .cards{display:block}
+      .chart-block{height:260px}
+      .grid{grid-template-columns:1fr}
+      .actions button{min-width:60px;padding:8px;font-size:.85rem}
+      footer{bottom:64px;padding:8px 0}
+      .new-trade-btn{width:36px;height:36px;font-size:18px}
+      button.primary,button.neutral{padding:10px}
+      button.sl,button.tp{padding:8px}
+    }
+    @media (min-width:769px){
+      .cards{display:none}
+      .tab-icon{display:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">جورنال من</div>
+      <button class="new-trade-btn" id="quickNew" title="معامله جدید">➕</button>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-tab="settings" role="tab">تنظیمات <span class="tab-icon">⚙️</span></div>
+      <div class="tab" data-tab="newTrade" role="tab">معامله جدید <span class="tab-icon">➕</span></div>
+      <div class="tab" data-tab="trades" role="tab">معاملات <span class="tab-icon">📋</span></div>
+      <div class="tab" data-tab="metrics" role="tab">متریک‌ها <span class="tab-icon">📊</span></div>
+      <div class="tab" data-tab="data" role="tab">داده‌ها <span class="tab-icon">💾</span></div>
+    </div>
+
+    <div class="content" id="content">
+      <section class="panel active" id="settings">
+        <h2>تنظیمات</h2>
+        <div class="grid">
+          <label>سرمایه کل <input id="capital" type="number" value="10000" inputmode="decimal" /></label>
+          <label>اهرم <input id="leverage" type="number" value="10" inputmode="numeric" /></label>
+          <label>ریسک (%) <input id="risk" type="number" step="0.1" value="1" inputmode="decimal" /></label>
+          <label>ریوارد (%) <input id="reward" type="number" step="0.1" value="2" inputmode="decimal" /></label>
+        </div>
+        <button class="primary" id="saveBtn">ذخیره تنظیمات</button>
+        <div class="hint">نکته: روی تب‌ها می‌توانید با کشیدن انگشت (Swipe) جابه‌جا شوید.</div>
+      </section>
+
+      <section class="panel" id="newTrade">
+        <h2>معامله جدید</h2>
+        <div class="grid">
+          <label>نام کوین <input id="coin" type="text" autocomplete="off" /></label>
+          <label>نوع <select id="tradeType"><option value="long">لانگ</option><option value="short">شورت</option></select></label>
+          <label>قیمت ورود <input id="entry" type="number" step="0.01" inputmode="decimal" /></label>
+        </div>
+        <button class="primary" id="calcBtn">محاسبه</button>
+        <div id="calcResult"></div>
+      </section>
+
+      <section class="panel" id="trades">
+        <h2>معاملات</h2>
+        <div class="table-wrap">
+          <table id="tradesTable">
+            <thead>
+              <tr>
+                <th>شناسه</th><th>کوین</th><th>نوع</th><th>ورود</th><th>SL</th><th>TP</th><th>مقدار</th><th>زمان ورود</th><th>وضعیت</th><th>خروج</th><th>زمان خروج</th><th>PNL</th><th>عملیات</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="cards" id="tradeCards"></div>
+      </section>
+
+      <section class="panel" id="metrics">
+        <h2>متریک‌ها</h2>
+        <div class="metrics" id="metricsGrid"></div>
+        <div class="chart-block">
+          <div class="chart-toolbar">
+            <button class="tool" data-target="capitalChart" aria-label="تمام‌صفحه">⤢</button>
+          </div>
+          <canvas id="capitalChart"></canvas>
+        </div>
+        <div class="chart-block">
+          <div class="chart-toolbar">
+            <button class="tool" data-target="pnlChart" aria-label="تمام‌صفحه">⤢</button>
+          </div>
+          <canvas id="pnlChart"></canvas>
+        </div>
+        <div class="chart-block">
+          <div class="chart-toolbar">
+            <button class="tool" data-target="winLossPie" aria-label="تمام‌صفحه">⤢</button>
+          </div>
+          <canvas id="winLossPie"></canvas>
+        </div>
+      </section>
+
+      <section class="panel" id="data">
+        <h2>مدیریت داده‌ها</h2>
+        <div class="grid">
+          <button class="neutral" id="exportBtn">خروجی</button>
+          <input type="file" id="importFile" />
+          <button class="neutral" id="importBtn">ورود</button>
+          <button class="neutral" id="clearBtn">پاک کردن</button>
+        </div>
+      </section>
+    </div>
+  </div>
+  <footer><a href="https://behfarkhosravi.github.io" target="_blank" rel="noopener noreferrer">Behfar Khosravi</a> © 2025, v0.1</footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // ---- State ----
+    let settings = { capital: 10000, leverage: 10, risk: 1, reward: 2 };
+    let trades = [];
+    let capitalHistory = [{ time: new Date().toISOString(), capital: 10000 }];
+    const storageKey = 'tradeTrackerData_v2';
+    let charts = { capital:null, pnl:null, pie:null };
+
+    // ---- Helpers ----
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+    function persist(){ localStorage.setItem(storageKey, JSON.stringify({ settings, trades, capitalHistory })); }
+    function hydrate(){
+      const raw = localStorage.getItem(storageKey);
+      if(!raw) return;
+      try{ const d = JSON.parse(raw); settings=d.settings||settings; trades=d.trades||[]; capitalHistory=d.capitalHistory||capitalHistory; }catch{ /* ignore */ }
+      $('#capital').value=settings.capital;$('#leverage').value=settings.leverage;$('#risk').value=settings.risk;$('#reward').value=settings.reward;
+      renderTrades(); renderMetrics();
+      activateTab('settings'); // Show settings on initial load
+    }
+
+    // ---- Navigation (tabs) + swipe ----
+    const tabsEl = $('#tabs');
+    tabsEl.addEventListener('click', e=>{
+      const t = e.target.closest('.tab');
+      if(!t) return; activateTab(t.dataset.tab);
+    });
+
+    // Swipe between tabs
+    let startX=null, startY=null;
+    const content = $('#content');
+    content.addEventListener('touchstart', e=>{ const t=e.touches[0]; startX=t.clientX; startY=t.clientY; }, {passive:true});
+    content.addEventListener('touchend', e=>{
+      if(startX===null) return; const t=e.changedTouches[0]; const dx=t.clientX-startX; const dy=t.clientY-startY; startX=startY=null;
+      if(Math.abs(dx)>60 && Math.abs(dy)<40){
+        const order = $$('.tab');
+        const activeIndex = order.findIndex(x=>x.classList.contains('active'));
+        let next = activeIndex + (dx<0? +1 : -1);
+        next = Math.max(0, Math.min(order.length-1, next));
+        activateTab(order[next].dataset.tab);
+      }
+    }, {passive:true});
+
+    function activateTab(id){
+      $$('.tab').forEach(x=>x.classList.toggle('active', x.dataset.tab===id));
+      $$('.panel').forEach(x=>x.classList.toggle('active', x.id===id));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if(id==='metrics') ensureCharts();
+    }
+
+    // Quick action FAB => jump to new trade
+    $('#quickNew').addEventListener('click', ()=> activateTab('newTrade'));
+
+    // ---- Settings ----
+    $('#saveBtn').addEventListener('click', ()=>{
+      settings.capital = parseFloat($('#capital').value)||settings.capital;
+      settings.leverage = parseFloat($('#leverage').value)||settings.leverage;
+      settings.risk = parseFloat($('#risk').value)||settings.risk;
+      settings.reward = parseFloat($('#reward').value)||settings.reward;
+      persist();
+      toast('تنظیمات ذخیره شد');
+    });
+
+    // ---- New Trade ----
+    $('#calcBtn').addEventListener('click', calculateTrade);
+
+    function calculateTrade(){
+      const coin = $('#coin').value.trim();
+      const tradeType = $('#tradeType').value;
+      const entry = parseFloat($('#entry').value);
+      if(!coin || isNaN(entry)) return toast('اطلاعات را کامل وارد کنید');
+      const d_sl = settings.risk/100/settings.leverage;
+      const d_tp = settings.reward/100/settings.leverage;
+      let sl,tp; if(tradeType==='long'){ sl=entry*(1-d_sl); tp=entry*(1+d_tp);} else { sl=entry*(1+d_sl); tp=entry*(1-d_tp);} 
+      const quantity = (settings.capital*settings.leverage)/entry;
+      $('#calcResult').innerHTML = `
+        <div class="metric">
+          <p>SL: ${sl.toFixed(4)}</p>
+          <p>TP: ${tp.toFixed(4)}</p>
+          <p>مقدار: ${quantity.toFixed(4)}</p>
+          <button class="primary" id="openBtn">تایید و باز کردن</button>
+        </div>`;
+      $('#openBtn').onclick = ()=> openTrade(coin, tradeType, entry, sl, tp, quantity);
+    }
+
+    function openTrade(coin,type,entry,sl,tp,quantity){
+      const trade = { id: trades.length+1, coin, type, entry, sl, tp, quantity, entryTime:new Date().toISOString(), status:'open', exitPrice:null, exitTime:null, pnl:null };
+      trades.push(trade); persist(); renderTrades(); $('#calcResult').innerHTML=''; activateTab('trades');
+    }
+
+    function renderTrades(){
+      const tbody = $('#tradesTable tbody'); tbody.innerHTML='';
+      const cards = $('#tradeCards'); cards.innerHTML='';
+      trades.forEach(t=>{
+        // table
+        const tr=document.createElement('tr');
+        tr.innerHTML = `
+          <td>${t.id}</td><td>${t.coin}</td><td>${t.type}</td><td>${t.entry}</td>
+          <td>${t.sl.toFixed(4)}</td><td>${t.tp.toFixed(4)}</td><td>${t.quantity.toFixed(4)}</td>
+          <td>${new Date(t.entryTime).toLocaleString('fa-IR')}</td>
+          <td>${t.status}</td>
+          <td>${t.exitPrice? t.exitPrice.toFixed(4): ''}</td>
+          <td>${t.exitTime? new Date(t.exitTime).toLocaleString('fa-IR'): ''}</td>
+          <td class="${t.pnl>0?'green':t.pnl<0?'red':''}">${t.pnl!==null? t.pnl.toFixed(2): ''}</td>
+          <td>
+            ${t.status==='open' ? `
+              <div class="actions">
+                <button class="sl" onclick="closeTrade(${t.id},'sl')">SL</button>
+                <button class="tp" onclick="closeTrade(${t.id},'tp')">TP</button>
+                <input type="number" id="exit_${t.id}" placeholder="قیمت خروج" inputmode="decimal" style="max-width:160px">
+                <button class="neutral" onclick="closeTrade(${t.id},'manual')">دستی</button>
+              </div>`: ''}
+          </td>`;
+        tbody.appendChild(tr);
+        // card
+        const card=document.createElement('div'); card.className='card';
+        card.innerHTML = `
+          <p><strong>شناسه:</strong> ${t.id}</p>
+          <p><strong>کوین:</strong> ${t.coin}</p>
+          <p><strong>نوع:</strong> ${t.type}</p>
+          <p><strong>ورود:</strong> ${t.entry}</p>
+          <p><strong>SL:</strong> ${t.sl.toFixed(4)} — <strong>TP:</strong> ${t.tp.toFixed(4)}</p>
+          <p><strong>مقدار:</strong> ${t.quantity.toFixed(4)}</p>
+          <p><strong>زمان ورود:</strong> ${new Date(t.entryTime).toLocaleString('fa-IR')}</p>
+          <p><strong>وضعیت:</strong> ${t.status}</p>
+          <p><strong>قیمت خروج:</strong> ${t.exitPrice? t.exitPrice.toFixed(4): '-'} — <strong>PNL:</strong> <span class="${t.pnl>0?'green':t.pnl<0?'red':''}">${t.pnl!==null? t.pnl.toFixed(2): '-'}</span></p>
+          ${t.status==='open'?`
+            <div class="actions">
+              <button class="sl" onclick="closeTrade(${t.id},'sl')">SL</button>
+              <button class="tp" onclick="closeTrade(${t.id},'tp')">TP</button>
+              <input type="number" id="exit_card_${t.id}" placeholder="قیمت خروج" inputmode="decimal" style="flex:1;min-width:120px">
+              <button class="neutral" onclick="closeTrade(${t.id},'manual','exit_card_${t.id}')">دستی</button>
+            </div>`:''}
+        `;
+        cards.appendChild(card);
+      });
+    }
+
+    window.closeTrade = function(id, mode, inputId=`exit_${id}`){
+      const t = trades.find(x=>x.id===id); if(!t) return;
+      let exitPrice;
+      if(mode==='sl') exitPrice = t.sl; else if(mode==='tp') exitPrice=t.tp; else {
+        exitPrice = parseFloat(document.getElementById(inputId).value); if(isNaN(exitPrice)) return toast('قیمت خروج معتبر وارد کنید');
+      }
+      t.exitPrice=exitPrice; t.exitTime=new Date().toISOString(); t.status='closed';
+      const delta = t.type==='long' ? (exitPrice - t.entry) : (t.entry - exitPrice);
+      t.pnl = delta * t.quantity; settings.capital += t.pnl; capitalHistory.push({ time:t.exitTime, capital: settings.capital });
+      persist(); renderTrades(); renderMetrics(); if($('#metrics').classList.contains('active')) ensureCharts();
+    }
+
+    function renderMetrics(){
+      let total=0,w=0,l=0; const closed=trades.filter(t=>t.status==='closed');
+      closed.forEach(t=>{ total+=t.pnl; if(t.pnl>0) w++; else if(t.pnl<0) l++; });
+      const winrate = (w+l)>0 ? (w/(w+l)*100).toFixed(2) : 0;
+      $('#metricsGrid').innerHTML = `
+        <div class="metric"><p>سود/زیان کل</p><p class="${total>0?'green':'red'}">${total.toFixed(2)}</p></div>
+        <div class="metric"><p>معاملات موفق</p><p>${w}</p></div>
+        <div class="metric"><p>معاملات ناموفق</p><p>${l}</p></div>
+        <div class="metric"><p>نرخ موفقیت</p><p>${winrate}%</p></div>
+        <div class="metric"><p>سرمایه فعلی</p><p>${settings.capital.toFixed(2)}</p></div>`;
+    }
+
+    function ensureCharts(){
+      const labels = capitalHistory.map(h=> new Date(h.time).toLocaleString('fa-IR'));
+      if(charts.capital){ charts.capital.destroy(); charts.pnl.destroy(); charts.pie.destroy(); }
+
+      charts.capital = new Chart($('#capitalChart').getContext('2d'),{
+        type:'line', data:{ labels, datasets:[{ label:'تغییر سرمایه', data: capitalHistory.map(h=>h.capital), borderColor:'#21cbf3', backgroundColor:'rgba(33,150,243,.2)', tension:.35, fill:true }]},
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#e0e0e0'}}}, scales:{x:{ticks:{color:'#e0e0e0'}}, y:{ticks:{color:'#e0e0e0'}}} }
+      });
+
+      const closed=trades.filter(t=>t.status==='closed');
+      charts.pnl = new Chart($('#pnlChart').getContext('2d'),{
+        type:'bar', data:{ labels: closed.map(t=>`#${t.id}`), datasets:[{ label:'PNL هر معامله', data: closed.map(t=>t.pnl), backgroundColor: closed.map(t=> t.pnl>0?'#4caf50':'#ff5252') }]},
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#e0e0e0'}}}, scales:{x:{ticks:{color:'#e0e0e0'}}, y:{ticks:{color:'#e0e0e0'}}} }
+      });
+
+      let w=0,l=0; closed.forEach(t=>{ if(t.pnl>0) w++; else if(t.pnl<0) l++; });
+      charts.pie = new Chart($('#winLossPie').getContext('2d'),{
+        type:'pie', data:{ labels:['موفق','ناموفق'], datasets:[{ data:[w,l], backgroundColor:['#4caf50','#ff5252'] }]},
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#e0e0e0'}}} }
+      });
+
+      attachFullscreenTools();
+    }
+
+    function attachFullscreenTools(){
+      $$('.tool').forEach(btn=>{
+        btn.onclick = ()=>{
+          const id = btn.dataset.target; const wrap = document.getElementById(id).closest('.chart-block');
+          if(wrap.requestFullscreen){ wrap.requestFullscreen(); }
+        };
+      });
+      document.addEventListener('fullscreenchange', ()=>{
+        if(!document.fullscreenElement && $('#metrics').classList.contains('active')){ ensureCharts(); }
+      });
+    }
+
+    // Export / Import / Clear
+    $('#exportBtn').addEventListener('click', ()=>{
+      const blob = new Blob([JSON.stringify({ settings, trades, capitalHistory })], {type:'application/json'});
+      const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='trades.json'; a.click(); URL.revokeObjectURL(url);
+    });
+    $('#importBtn').addEventListener('click', ()=>{
+      const f = $('#importFile').files[0]; if(!f) return toast('فایل را انتخاب کنید');
+      const r=new FileReader(); r.onload=e=>{ try{ const d=JSON.parse(e.target.result); settings=d.settings; trades=d.trades; capitalHistory=d.capitalHistory; persist(); hydrate(); toast('داده‌ها وارد شد'); }catch{ toast('فایل نامعتبر است'); } }; r.readAsText(f);
+    });
+    $('#clearBtn').addEventListener('click', ()=>{ if(confirm('همه داده‌ها حذف شود؟')){ localStorage.removeItem(storageKey); location.reload(); }});
+
+    // Tiny toast
+    function toast(msg){
+      let el=document.createElement('div');
+      el.textContent=msg; el.style.cssText='position:fixed;inset:auto 16px 16px 16px;background:rgba(20,20,20,.9);color:#fff;padding:12px 14px;border:1px solid var(--line);border-radius:12px;z-index:80;backdrop-filter:blur(8px);text-align:center;';
+      document.body.appendChild(el); setTimeout(()=>{ el.style.transition='opacity .4s'; el.style.opacity='0'; setTimeout(()=>el.remove(),400); }, 1400);
+    }
+
+    // Init
+    window.addEventListener('load', ()=>{ hydrate(); });
+  </script>
+</body>
+</html>
